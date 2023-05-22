@@ -23,8 +23,8 @@ def get_API_components():
 
 
 def expected_response_params(api_endpoint):
-    """Prompts user for an endpoint, for which to resolve references to parent classes
-    and to return an explicit interface of the expected response parameters.
+    """Resolves references to schema-classes and returns an explicit interface
+    of the expected response parameters.
 
     See search.dip.bundestag.de/api/v1/swagger-ui/#/Plenarprotokolle/getPlenarprotokollTextList
     for a list of valid endpoints.
@@ -37,14 +37,16 @@ def expected_response_params(api_endpoint):
     """
     # expected params of responses for endpoint
     response_params = {}
-    for dict in (
-        api_schemas := get_API_components()["schemas"]
-    )[api_endpoint]["allOf"]:  # parent classes
+    for dict in (api_schemas := get_API_components()["schemas"])[api_endpoint][
+        "allOf"
+    ]:  # parent classes
         for key, val in dict.items():
-            if key == '$ref':
+            if key == "$ref":
                 # follow the link and unpack attributes
                 for attr_name, attr_info in api_schemas[
-                    (parent := str(val).split("#/components/schemas/")[-1])  # noqa
+                    (
+                        parent := str(val).split("#/components/schemas/")[-1]
+                    )  # noqa
                 ]["properties"].items():
                     if attr_name in response_params:
                         response_params[attr_name].update(attr_info)
